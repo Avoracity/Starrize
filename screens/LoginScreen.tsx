@@ -1,24 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'; // Import NativeStackNavigationProp
 import tailwind from 'tailwind-rn'; // Import the tailwind-rn function
 
 type Props = {
-  navigation: NativeStackNavigationProp<any, 'Login'>; 
-   // any is the type of the param list
-   // 'Login' is the name to identify the navigation stack that is being worked on
+  navigation: NativeStackNavigationProp<any, 'Login'>;
+};
+
+type AppData = {
+  icon: any;
+  name: string;
+  timeSpent: string;
 };
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  // Sample data
-  const appData = [
-    { icon: require('../assets/favicon.png'), name: 'MyApp', timeSpent: '2h 30m' },
-    // Add more app data here as needed
-  ];
+  const [appData, setAppData] = useState<AppData[]>([]); // Initialize with an empty array
+
+  // Function to fetch active app data from the API
+  const fetchActiveAppData = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/active-apps'); // Correct endpoint for multiple apps
+      const data = await response.json();
+      console.log("Fetched data:", data); // Log the fetched data for debugging
+
+      // Set the new app data; this will replace old data with the updated data from the server
+      setAppData(data.map((app: any) => ({
+        icon: require('../assets/favicon.png'), // Placeholder icon, replace with dynamic icons if needed
+        name: app.name,
+        timeSpent: app.timeSpent,
+      })));
+    } catch (error) {
+      console.error("Failed to fetch app data:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch app data every 5 seconds
+    const interval = setInterval(fetchActiveAppData, 5000);
+    return () => clearInterval(interval); // Clean up interval on unmount
+  }, []);
 
   return (
     <View style={styles.container}>
-
       <View style={styles.rectangleContainer}>
         <View style={styles.rectangleContainerTop}>
           <Text style={styles.rectangleText}>Time Breakdown</Text>
@@ -30,13 +53,17 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         // Uncomment the line below to enable navigation on press
         // onPress={() => navigation.navigate('Home')}
       >
-        {appData.map((app, index) => (
-          <View key={index} style={styles.appContainer}>
-            <Image source={app.icon} style={styles.icon} />
-            <Text style={styles.appName}>{app.name}</Text>
-            <Text style={styles.timeSpent}>{app.timeSpent}</Text>
-          </View>
-        ))}
+        {appData.length === 0 ? (
+          <Text style={styles.text}>No apps data available</Text>
+        ) : (
+          appData.map((app, index) => (
+            <View key={index} style={styles.appContainer}>
+              <Image source={app.icon} style={styles.icon} />
+              <Text style={styles.appName}>{app.name}</Text>
+              <Text style={styles.timeSpent}>{app.timeSpent}</Text>
+            </View>
+          ))
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -56,7 +83,7 @@ const styles = StyleSheet.create({
   largeContainer: {
     backgroundColor: '#121117', // Optional: background color of the container
     width: 500, // Adjust width as needed
-    height: 200, // Adjust height as needed
+    height: 'auto', // Adjust height to fit contents
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomLeftRadius: 5, // Rounded bottom-left corner
@@ -95,7 +122,7 @@ const styles = StyleSheet.create({
   appContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 100,
+    marginBottom: 10, // Adjust margin as needed
     padding: 5,
     backgroundColor: '#282631',
     width: '100%',

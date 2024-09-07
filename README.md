@@ -39,3 +39,10 @@ Example:
     export default FuncScreen;
 
 ```
+
+## how to track time
+within the /server/ folder run 
+node ActiveWindow.js      to start tracking
+
+# server troubleshooting
+Ensure CORS is enabled
