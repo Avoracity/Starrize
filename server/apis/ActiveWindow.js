@@ -1,17 +1,11 @@
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); // Import the cors package
 const activeWin = require('active-win');
 
 const app = express();
 const PORT = 3000;
 
-// List of app names to ignore
-const ignoreList = [
-  'SnippingTool.exe', 
-  ''
-];
-
-app.use(cors());
+app.use(cors()); // Enable CORS for all routes
 
 let currentApp = [];
 let lastApp = '';
@@ -21,11 +15,6 @@ let startTime = Date.now();
 async function trackActiveWindow() {
   const window = await activeWin();
   const appName = window ? window.owner.name : 'Unknown';
-
-  if (ignoreList.includes(appName)) {
-    // Skip tracking if the app is in the ignore list
-    return;
-  }
 
   if (appName !== lastApp) {
     const endTime = Date.now();
