@@ -13,7 +13,7 @@ type AppData = {
   timeSpent: string;
 };
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+const AppTrackerScreen: React.FC<Props> = ({ navigation }) => {
   const [appData, setAppData] = useState<AppData[]>([]); // Initialize with an empty array
 
   // Function to fetch active app data from the API
@@ -148,4 +148,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default AppTrackerScreen;
