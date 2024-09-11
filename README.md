@@ -46,3 +46,15 @@ node ActiveWindow.js      to start tracking
 
 # server troubleshooting
 Ensure CORS is enabled
+
+# Update Naming Convention
+
+Major  x.0.0
+    Introduces new features that changes how the existing ones work. 
+
+Minor  0.x.0
+    new and additional features and/or improvements that does not change existing functionalities (backward-compatible)
+
+Patch 0.0.x
+    significant bug fixes
+

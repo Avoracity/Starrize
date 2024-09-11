@@ -7,36 +7,41 @@ const PORT = 3000;
 
 app.use(cors()); // Enable CORS for all routes
 
-let currentApp = [];
+// Map to keep track of time spent on each application
+const appTimes = new Map();
 let lastApp = '';
 let startTime = Date.now();
 
 // Function to track active window and time spent
 async function trackActiveWindow() {
-  const window = await activeWin();
-  const appName = window ? window.owner.name : 'Unknown';
+  try {
+    const window = await activeWin();
+    const appName = window ? window.owner.name : 'Unknown';
 
-  if (appName !== lastApp) {
-    const endTime = Date.now();
-    const timeSpent = Math.floor((endTime - startTime) / 1000); // in seconds
+    if (appName !== lastApp) {
+      const endTime = Date.now();
+      const timeSpent = Math.floor((endTime - startTime) / 1000); // in seconds
 
-    if (lastApp) {
-      const appIndex = currentApp.findIndex(app => app.name === lastApp);
-      if (appIndex !== -1) {
-        currentApp[appIndex] = {
-          name: lastApp,
-          timeSpent: `${Math.floor(timeSpent / 3600)}h ${Math.floor((timeSpent % 3600) / 60)}m`
-        };
-      } else {
-        currentApp.push({
-          name: lastApp,
-          timeSpent: `${Math.floor(timeSpent / 3600)}h ${Math.floor((timeSpent % 3600) / 60)}m`
-        });
+      // Update time spent for the last application
+      if (lastApp) {
+        if (appTimes.has(lastApp)) {
+          const previousTime = appTimes.get(lastApp);
+          const updatedTime = previousTime + timeSpent;
+          appTimes.set(lastApp, updatedTime);
+        } else {
+          appTimes.set(lastApp, timeSpent);
+        }
       }
-    }
 
-    lastApp = appName;
-    startTime = Date.now();
+      // Log the app switch and time spent for debugging
+      console.log(`Switching from ${lastApp} to ${appName}. Time spent on ${lastApp}: ${Math.floor(appTimes.get(lastApp) / 60)} minutes`);
+
+      // Switch to the new app
+      lastApp = appName;
+      startTime = Date.now();
+    }
+  } catch (error) {
+    console.error("Error tracking active window:", error);
   }
 }
 
@@ -45,6 +50,14 @@ setInterval(trackActiveWindow, 1000);
 
 // API endpoint to get active apps data
 app.get('/active-apps', (req, res) => {
+  const currentApp = Array.from(appTimes.entries()).map(([name, time]) => ({
+    name,
+    timeSpent: `${Math.floor(time / 3600)}h ${Math.floor((time % 3600) / 60)}m`
+  }));
+  
+  // Log fetching current app data for debugging
+  console.log("Fetching current app data:", currentApp);
+  console.log("--------------------");
   res.json(currentApp);
 });
 
